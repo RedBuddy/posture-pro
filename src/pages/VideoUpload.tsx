@@ -1,41 +1,161 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Upload, Video, CheckCircle, AlertCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Upload, Video, CheckCircle, AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { VideoAnalysisAPI, ExerciseType } from "@/services/api";
+import { useAnalysis } from "@/contexts/AnalysisContext";
 
 const VideoUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [exerciseTypes, setExerciseTypes] = useState<ExerciseType[]>([]);
+  const [selectedExercise, setSelectedExercise] = useState<string>("sentadilla");
+  const [isApiConnected, setIsApiConnected] = useState<boolean | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { setAnalysisData } = useAnalysis();
+
+  useEffect(() => {
+    const checkApiAndLoadExercises = async () => {
+      try {
+        const [connected, types] = await Promise.all([
+          VideoAnalysisAPI.healthCheck(),
+          VideoAnalysisAPI.getExerciseTypes()
+        ]);
+        
+        setIsApiConnected(connected);
+        setExerciseTypes(types);
+        
+        if (!connected) {
+          toast({
+            title: "API no disponible",
+            description: "Trabajando en modo demo. Asegúrate de que el servidor Flask esté ejecutándose.",
+            variant: "destructive"
+          });
+        }
+      } catch (error) {
+        setIsApiConnected(false);
+        setExerciseTypes([
+          { id: 'sentadilla', name: 'SENTADILLA', description: 'Análisis de sentadillas' },
+          { id: 'peso_muerto', name: 'PESO MUERTO', description: 'Análisis de peso muerto' },
+          { id: 'press_banca', name: 'PRESS BANCA', description: 'Análisis de press banca' }
+        ]);
+      }
+    };
+
+    checkApiAndLoadExercises();
+  }, [toast]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
       setUploadedFile(file);
-      setIsUploading(true);
-      setUploadProgress(0);
-      
-      // Simular progreso de subida
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setIsUploading(false);
-            toast({
-              title: "Video subido exitosamente",
-              description: "Tu video está listo para análisis postural.",
-            });
-            return 100;
-          }
-          return prev + 10;
-        });
-      }, 200);
+      toast({
+        title: "Video seleccionado",
+        description: `${file.name} listo para análisis.`,
+      });
     }
   }, [toast]);
+
+  const startAnalysis = async () => {
+    if (!uploadedFile) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      setAnalysisData({ 
+        isAnalyzing: true, 
+        videoFile: uploadedFile, 
+        exerciseType: selectedExercise 
+      });
+
+      if (isApiConnected) {
+        // Progreso simulado durante el análisis
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(progressInterval);
+              return 90;
+            }
+            return prev + Math.random() * 15;
+          });
+        }, 500);
+
+        const { videoBlob, stats } = await VideoAnalysisAPI.uploadAndAnalyze(
+          uploadedFile,
+          selectedExercise
+        );
+
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+
+        setAnalysisData({
+          analyzedVideoBlob: videoBlob,
+          stats: stats,
+          isAnalyzing: false
+        });
+
+        toast({
+          title: "Análisis completado",
+          description: "Tu video ha sido analizado exitosamente.",
+        });
+
+        setTimeout(() => navigate('/results'), 1000);
+      } else {
+        // Modo demo sin API
+        const demoInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 100) {
+              clearInterval(demoInterval);
+              setIsUploading(false);
+              
+              // Datos demo
+              setAnalysisData({
+                stats: {
+                  repeticiones: 12,
+                  errores_detectados: [
+                    { timestamp: 15.2, error: "Rodillas hacia adentro" },
+                    { timestamp: 28.7, error: "Inclinación excesiva" }
+                  ],
+                  scores_por_frame: Array.from({ length: 100 }, () => Math.floor(Math.random() * 40) + 60),
+                  duracion_segundos: 45,
+                  score_promedio: 78
+                },
+                isAnalyzing: false
+              });
+
+              toast({
+                title: "Análisis demo completado",
+                description: "Mostrando resultados simulados.",
+              });
+
+              setTimeout(() => navigate('/results'), 1000);
+              return 100;
+            }
+            return prev + 8;
+          });
+        }, 300);
+      }
+    } catch (error) {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setAnalysisData({ isAnalyzing: false });
+      
+      toast({
+        title: "Error en el análisis",
+        description: error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive"
+      });
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -55,18 +175,65 @@ const VideoUpload = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-          Subir Video para Análisis
-        </h1>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Subir Video para Análisis
+          </h1>
+          {isApiConnected !== null && (
+            <Badge variant={isApiConnected ? "secondary" : "destructive"} className="ml-2">
+              {isApiConnected ? (
+                <>
+                  <Wifi className="h-3 w-3 mr-1" />
+                  API Conectada
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3 mr-1" />
+                  Modo Demo
+                </>
+              )}
+            </Badge>
+          )}
+        </div>
         <p className="text-lg text-muted-foreground">
           Sube tu video de ejercicio y obtén un análisis detallado de tu postura
         </p>
       </div>
 
-      <Card className="shadow-medium">
+      {/* Selector de Ejercicio */}
+      <Card className="shadow-medium mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Video className="h-5 w-5 text-primary" />
+            Tipo de Ejercicio
+          </CardTitle>
+          <CardDescription>
+            Selecciona el tipo de ejercicio que vas a realizar
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={selectedExercise} onValueChange={setSelectedExercise}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona un ejercicio" />
+            </SelectTrigger>
+            <SelectContent>
+              {exerciseTypes.map((exercise) => (
+                <SelectItem key={exercise.id} value={exercise.id}>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{exercise.name}</span>
+                    <span className="text-sm text-muted-foreground">{exercise.description}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-medium">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5 text-primary" />
             Seleccionar Video
           </CardTitle>
           <CardDescription>
@@ -131,13 +298,22 @@ const VideoUpload = () => {
               
               <div className="flex gap-3">
                 {uploadProgress === 100 ? (
-                  <Button variant="hero" className="flex-1">
-                    Iniciar Análisis Postural
+                  <Button variant="outline" onClick={resetUpload} className="flex-1">
+                    Analizar Otro Video
+                  </Button>
+                ) : isUploading ? (
+                  <Button disabled className="flex-1">
+                    Analizando...
                   </Button>
                 ) : (
-                  <Button variant="outline" onClick={resetUpload} className="flex-1">
-                    Seleccionar otro video
-                  </Button>
+                  <>
+                    <Button variant="outline" onClick={resetUpload} className="flex-1">
+                      Seleccionar Otro Video
+                    </Button>
+                    <Button variant="hero" onClick={startAnalysis} className="flex-1">
+                      Iniciar Análisis Postural
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

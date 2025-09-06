@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ import {
 import heroImage from "@/assets/hero-exercise-analysis.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
   const features = [
     {
       icon: Camera,
