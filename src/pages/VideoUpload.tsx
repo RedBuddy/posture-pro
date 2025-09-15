@@ -33,13 +33,11 @@ const VideoUpload = () => {
         setIsApiConnected(connected);
         setExerciseTypes(types);
         
-        if (!connected) {
-          toast({
-            title: "API no disponible",
-            description: "Trabajando en modo demo. Asegúrate de que el servidor Flask esté ejecutándose.",
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "MediaPipe JS Activo",
+          description: "Análisis de postura en tiempo real listo.",
+          variant: "default"
+        });
       } catch (error) {
         setIsApiConnected(false);
         setExerciseTypes([
@@ -77,73 +75,24 @@ const VideoUpload = () => {
         exerciseType: selectedExercise 
       });
 
-      if (isApiConnected) {
-        // Progreso simulado durante el análisis
-        const progressInterval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return 90;
-            }
-            return prev + Math.random() * 15;
-          });
-        }, 500);
+      const { videoBlob, stats } = await VideoAnalysisAPI.uploadAndAnalyze(
+        uploadedFile,
+        selectedExercise,
+        (progress) => setUploadProgress(progress)
+      );
 
-        const { videoBlob, stats } = await VideoAnalysisAPI.uploadAndAnalyze(
-          uploadedFile,
-          selectedExercise
-        );
+      setAnalysisData({
+        analyzedVideoBlob: videoBlob,
+        stats: stats,
+        isAnalyzing: false
+      });
 
-        clearInterval(progressInterval);
-        setUploadProgress(100);
+      toast({
+        title: "Análisis completado",
+        description: "Video analizado con MediaPipe JS.",
+      });
 
-        setAnalysisData({
-          analyzedVideoBlob: videoBlob,
-          stats: stats,
-          isAnalyzing: false
-        });
-
-        toast({
-          title: "Análisis completado",
-          description: "Tu video ha sido analizado exitosamente.",
-        });
-
-        setTimeout(() => navigate('/results'), 1000);
-      } else {
-        // Modo demo sin API
-        const demoInterval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 100) {
-              clearInterval(demoInterval);
-              setIsUploading(false);
-              
-              // Datos demo
-              setAnalysisData({
-                stats: {
-                  repeticiones: 12,
-                  errores_detectados: [
-                    { timestamp: 15.2, error: "Rodillas hacia adentro" },
-                    { timestamp: 28.7, error: "Inclinación excesiva" }
-                  ],
-                  scores_por_frame: Array.from({ length: 100 }, () => Math.floor(Math.random() * 40) + 60),
-                  duracion_segundos: 45,
-                  score_promedio: 78
-                },
-                isAnalyzing: false
-              });
-
-              toast({
-                title: "Análisis demo completado",
-                description: "Mostrando resultados simulados.",
-              });
-
-              setTimeout(() => navigate('/results'), 1000);
-              return 100;
-            }
-            return prev + 8;
-          });
-        }, 300);
-      }
+      setTimeout(() => navigate('/results'), 1000);
     } catch (error) {
       setIsUploading(false);
       setUploadProgress(0);
@@ -181,17 +130,10 @@ const VideoUpload = () => {
           </h1>
           {isApiConnected !== null && (
             <Badge variant={isApiConnected ? "secondary" : "destructive"} className="ml-2">
-              {isApiConnected ? (
-                <>
-                  <Wifi className="h-3 w-3 mr-1" />
-                  API Conectada
-                </>
-              ) : (
-                <>
-                  <WifiOff className="h-3 w-3 mr-1" />
-                  Modo Demo
-                </>
-              )}
+              <>
+                <Wifi className="h-3 w-3 mr-1" />
+                MediaPipe JS Activo
+              </>
             </Badge>
           )}
         </div>
