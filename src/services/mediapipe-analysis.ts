@@ -43,17 +43,30 @@ export class MediaPipeAnalysisAPI {
     exerciseType: string,
     onProgress?: (progress: number) => void
   ): Promise<{ videoBlob: Blob; stats: AnalysisResult }> {
+    console.log('Iniciando procesamiento de video:', { 
+      fileName: videoFile.name, 
+      fileSize: videoFile.size,
+      exerciseType 
+    });
+
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
       if (!ctx) {
+        console.error('Error: No se pudo crear el contexto del canvas');
         reject(new Error('No se pudo crear el contexto del canvas'));
         return;
       }
 
       video.onloadedmetadata = () => {
+        console.log('Video metadata cargada:', {
+          width: video.videoWidth,
+          height: video.videoHeight,
+          duration: video.duration
+        });
+
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
@@ -71,9 +84,23 @@ export class MediaPipeAnalysisAPI {
 
         const recordedChunks: Blob[] = [];
         const stream = canvas.captureStream(frameRate);
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm;codecs=vp9'
-        });
+        
+        // Verificar soporte de codec
+        let mimeType = 'video/webm;codecs=vp9';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'video/webm;codecs=vp8';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'video/webm';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              console.error('MediaRecorder no soportado');
+              reject(new Error('Tu navegador no soporta grabación de video'));
+              return;
+            }
+          }
+        }
+        
+        console.log('Usando codec:', mimeType);
+        const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -140,8 +167,9 @@ export class MediaPipeAnalysisAPI {
         processFrame();
       };
 
-      video.onerror = () => {
-        reject(new Error('Error al procesar el video'));
+      video.onerror = (event) => {
+        console.error('Error al cargar el video:', event);
+        reject(new Error('Error al cargar el video: formato no compatible o archivo corrupto'));
       };
 
       video.src = URL.createObjectURL(videoFile);
