@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Camera, 
   BarChart3, 
@@ -11,12 +12,15 @@ import {
   Award,
   CheckCircle,
   Upload,
-  Activity
+  Activity,
+  LogOut,
+  User
 } from "lucide-react";
 import heroImage from "@/assets/hero-exercise-analysis.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const features = [
     {
       icon: Camera,
@@ -60,12 +64,29 @@ const Index = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <Link to="/upload">
-                <Button variant="outline">Subir Video</Button>
-              </Link>
-              <Link to="/results">
-                <Button variant="default">Ver Demo</Button>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>{user?.name || user?.email}</span>
+                  </div>
+                  <Link to="/upload">
+                    <Button variant="outline">Subir Video</Button>
+                  </Link>
+                  <Button variant="ghost" size="icon" onClick={logout}>
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button variant="outline">Iniciar Sesión</Button>
+                  </Link>
+                  <Link to="/auth">
+                    <Button variant="default">Registrarse</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
