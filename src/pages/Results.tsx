@@ -1,20 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Activity, 
-  TrendingUp, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Activity,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
   BarChart3,
   Download,
   Play,
   User,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import { useAnalysis } from "@/contexts/AnalysisContext";
 
@@ -25,7 +31,7 @@ const Results = () => {
 
   useEffect(() => {
     if (!analysisData.stats) {
-      navigate('/upload');
+      navigate("/upload");
       return;
     }
 
@@ -33,7 +39,7 @@ const Results = () => {
     if (analysisData.analyzedVideoBlob) {
       const url = URL.createObjectURL(analysisData.analyzedVideoBlob);
       setVideoUrl(url);
-      
+
       return () => URL.revokeObjectURL(url);
     }
   }, [analysisData.stats, navigate, analysisData.analyzedVideoBlob]);
@@ -43,45 +49,49 @@ const Results = () => {
   }
 
   const stats = analysisData.stats;
-  
+
   // Procesar datos para mostrar
   const processedData = {
     overallScore: Math.round(stats.score_promedio),
-    exercise: analysisData.exerciseType.replace('_', ' ').toUpperCase(),
+    exercise: analysisData.exerciseType.replace("_", " ").toUpperCase(),
     duration: `${Math.round(stats.duracion_segundos)} segundos`,
     frameCount: stats.scores_por_frame.length,
     issues: stats.errores_detectados.map((error, index) => ({
       type: error.error,
       severity: index % 3 === 0 ? "alto" : index % 3 === 1 ? "medio" : "bajo",
-      frame: Math.round(error.timestamp)
+      frame: Math.round(error.timestamp),
     })),
     improvements: [
       "Mantén las rodillas alineadas con los pies",
-      "Reduce la inclinación del torso hacia adelante", 
-      "Fortalece los músculos del core para mejor estabilidad"
+      "Reduce la inclinación del torso hacia adelante",
+      "Fortalece los músculos del core para mejor estabilidad",
     ],
     bodyMetrics: {
       leftKnee: Math.round(stats.score_promedio - 5),
       rightKnee: Math.round(stats.score_promedio + 3),
       hipAlignment: Math.round(stats.score_promedio - 8),
       spineAngle: Math.round(stats.score_promedio + 5),
-      shoulderLevel: Math.round(stats.score_promedio + 7)
-    }
+      shoulderLevel: Math.round(stats.score_promedio + 7),
+    },
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'alto': return 'destructive';
-      case 'medio': return 'warning';
-      case 'bajo': return 'secondary';
-      default: return 'secondary';
+      case "alto":
+        return "destructive";
+      case "medio":
+        return "warning";
+      case "bajo":
+        return "secondary";
+      default:
+        return "secondary";
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-success';
-    if (score >= 75) return 'text-warning';
-    return 'text-destructive';
+    if (score >= 90) return "text-success";
+    if (score >= 75) return "text-warning";
+    return "text-destructive";
   };
 
   return (
@@ -100,10 +110,16 @@ const Results = () => {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className={`text-4xl font-bold ${getScoreColor(processedData.overallScore)} mb-2`}>
+              <div
+                className={`text-4xl font-bold ${getScoreColor(
+                  processedData.overallScore
+                )} mb-2`}
+              >
                 {processedData.overallScore}%
               </div>
-              <p className="text-sm text-muted-foreground">Puntuación General</p>
+              <p className="text-sm text-muted-foreground">
+                Puntuación General
+              </p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-foreground mb-2">
@@ -121,7 +137,9 @@ const Results = () => {
               <div className="text-2xl font-semibold text-destructive mb-2">
                 {processedData.issues.length}
               </div>
-              <p className="text-sm text-muted-foreground">Problemas Detectados</p>
+              <p className="text-sm text-muted-foreground">
+                Problemas Detectados
+              </p>
             </div>
           </div>
         </CardContent>
@@ -151,8 +169,8 @@ const Results = () => {
               <CardContent>
                 <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
                   {videoUrl ? (
-                    <video 
-                      controls 
+                    <video
+                      controls
                       className="w-full h-full rounded-lg"
                       src={videoUrl}
                     >
@@ -179,12 +197,17 @@ const Results = () => {
                   Problemas Detectados
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 max-h-[20rem] overflow-y-auto">
                 {processedData.issues.map((issue, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  >
                     <div>
                       <p className="font-medium">{issue.type}</p>
-                      <p className="text-sm text-muted-foreground">Segundo {issue.frame}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Segundo {issue.frame}
+                      </p>
                     </div>
                     <Badge variant={getSeverityColor(issue.severity) as any}>
                       {issue.severity}
@@ -208,19 +231,25 @@ const Results = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {Object.entries(processedData.bodyMetrics).map(([part, score]) => (
-                <div key={part} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium capitalize">
-                      {part.replace(/([A-Z])/g, ' $1').trim()}
-                    </span>
-                    <span className={`font-semibold ${getScoreColor(score as number)}`}>
-                      {score}%
-                    </span>
+              {Object.entries(processedData.bodyMetrics).map(
+                ([part, score]) => (
+                  <div key={part} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium capitalize">
+                        {part.replace(/([A-Z])/g, " $1").trim()}
+                      </span>
+                      <span
+                        className={`font-semibold ${getScoreColor(
+                          score as number
+                        )}`}
+                      >
+                        {score}%
+                      </span>
+                    </div>
+                    <Progress value={score as number} className="h-2" />
                   </div>
-                  <Progress value={score as number} className="h-2" />
-                </div>
-              ))}
+                )
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -240,7 +269,9 @@ const Results = () => {
               <div className="h-64 bg-muted rounded-lg flex items-center justify-center">
                 <div className="text-center">
                   <TrendingUp className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Gráfico de progresión temporal</p>
+                  <p className="text-muted-foreground">
+                    Gráfico de progresión temporal
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -260,7 +291,10 @@ const Results = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {processedData.improvements.map((improvement, index) => (
-                <div key={index} className="flex items-start gap-3 p-4 bg-success/5 border border-success/20 rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-4 bg-success/5 border border-success/20 rounded-lg"
+                >
                   <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                   <p className="text-sm">{improvement}</p>
                 </div>
@@ -272,23 +306,27 @@ const Results = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-4 mt-8">
-        <Button variant="outline" onClick={() => navigate('/')} className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2"
+        >
           <ArrowLeft className="h-4 w-4" />
           Volver al Inicio
         </Button>
-        <Button variant="hero" className="flex items-center gap-2">
+        {/* <Button variant="hero" className="flex items-center gap-2">
           <Download className="h-4 w-4" />
           Descargar Reporte
         </Button>
         <Button variant="gradient" className="flex items-center gap-2">
           <User className="h-4 w-4" />
           Compartir con Entrenador
-        </Button>
-        <Button 
-          variant="outline"
+        </Button> */}
+        <Button
+          variant="hero"
           onClick={() => {
             resetAnalysis();
-            navigate('/upload');
+            navigate("/upload");
           }}
         >
           Analizar Otro Video

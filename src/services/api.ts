@@ -35,7 +35,7 @@ export interface User {
 
 export class VideoAnalysisAPI {
   static async uploadAndAnalyze(
-    file: File, 
+    file: File,
     exerciseType: string,
     onProgress?: (progress: number) => void
   ): Promise<{ videoBlob: Blob; stats: AnalysisResult }> {
@@ -44,38 +44,44 @@ export class VideoAnalysisAPI {
     formData.append('exercise_type', exerciseType);
 
     const token = localStorage.getItem('auth_token');
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+
+    let poller: number | undefined;
+    if (onProgress) {
+      // Poll cada 500ms al endpoint de progreso
+      poller = window.setInterval(async () => {
+        try {
+          const r = await fetch(`${API_BASE_URL}/api/progress`, { headers });
+          if (r.ok) {
+            const { progress } = await r.json();
+            onProgress(progress);
+            if (progress >= 100 && poller) {
+              clearInterval(poller);
+              poller = undefined;
+            }
+          }
+        } catch { /* noop */ }
+      }, 500);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/analyze`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/analyze`, { method: 'POST', headers, body: formData });
+      if (!response.ok) throw new Error('Error al analizar el video');
 
-    if (!response.ok) {
-      throw new Error('Error al analizar el video');
+      const data = await response.json();
+      const videoResponse = await fetch(`${API_BASE_URL}${data.video_path}`, { headers });
+      const videoBlob = await videoResponse.blob();
+
+      return { videoBlob, stats: data.stats };
+    } finally {
+      if (poller) clearInterval(poller);
+      if (onProgress) onProgress(100);
     }
-
-    const data = await response.json();
-    
-    // Descargar el video procesado
-    const videoResponse = await fetch(`${API_BASE_URL}${data.video_path}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-    const videoBlob = await videoResponse.blob();
-
-    return {
-      videoBlob,
-      stats: data.stats
-    };
   }
 
   static async getExerciseTypes(): Promise<ExerciseType[]> {
     const response = await fetch(`${API_BASE_URL}/api/exercise-types`);
-    
+
     if (!response.ok) {
       // Fallback a tipos por defecto
       return [

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { useDropzone } from "react-dropzone";
+import { useDropzone, FileRejection } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,17 +18,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import {
-  Upload,
-  Video,
-  CheckCircle,
-  AlertCircle,
-  Wifi,
-  WifiOff,
-} from "lucide-react";
+import { Upload, Video, CheckCircle, AlertCircle, Wifi } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { VideoAnalysisAPI, ExerciseType } from "@/services/api";
 import { useAnalysis } from "@/contexts/AnalysisContext";
+
+const MAX_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 
 const VideoUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -54,8 +49,8 @@ const VideoUpload = () => {
         setExerciseTypes(types);
 
         toast({
-          title: "MediaPipe JS Activo",
-          description: "Análisis de postura en tiempo real listo.",
+          title: "API conectada",
+          description: "Servicio de análisis disponible.",
           variant: "default",
         });
       } catch (error) {
@@ -83,22 +78,118 @@ const VideoUpload = () => {
     checkApiAndLoadExercises();
   }, [toast]);
 
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const file = acceptedFiles[0];
-      if (file) {
-        setUploadedFile(file);
-        toast({
-          title: "Video seleccionado",
-          description: `${file.name} listo para análisis.`,
-        });
+  // Validación de metadatos básicos del video antes de aceptarlo
+  const validateVideoFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith("video/")) {
+      return {
+        ok: false,
+        reason: "Formato no soportado. Debe ser un archivo de video.",
+      } as const;
+    }
+    if (file.size > MAX_SIZE_BYTES) {
+      return {
+        ok: false,
+        reason: "El tamaño del archivo excede 100MB.",
+      } as const;
+    }
+    const url = URL.createObjectURL(file);
+    try {
+      const meta = await new Promise<{
+        duration: number;
+        width: number;
+        height: number;
+      }>((resolve, reject) => {
+        const v: HTMLVideoElement = document.createElement("video");
+        v.preload = "metadata";
+        v.onloadedmetadata = () => {
+          resolve({
+            duration: isFinite(v.duration) ? v.duration : 0,
+            width: v.videoWidth || 0,
+            height: v.videoHeight || 0,
+          });
+        };
+        v.onerror = () =>
+          reject(new Error("No se pudieron leer los metadatos del video"));
+        v.src = url;
+      });
+      if (meta.duration < 0.5) {
+        return {
+          ok: false,
+          reason:
+            "La duración del video es muy corta o inválida (mínimo 0.5s).",
+        } as const;
       }
+      if (meta.width * meta.height === 0) {
+        return {
+          ok: false,
+          reason: "No se detectaron dimensiones válidas en el video.",
+        } as const;
+      }
+      return { ok: true } as const;
+    } catch (e) {
+      return {
+        ok: false,
+        reason: "El archivo parece estar corrupto o no es reproducible.",
+      } as const;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }, []);
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (!file) return;
+      const validation = await validateVideoFile(file);
+      if (!validation.ok) {
+        toast({
+          title: "Video inválido",
+          description: validation.reason,
+          variant: "destructive",
+        });
+        return;
+      }
+      setUploadedFile(file);
+      toast({
+        title: "Video seleccionado",
+        description: `${file.name} listo para análisis.`,
+      });
+    },
+    [toast, validateVideoFile]
+  );
+
+  const onDropRejected = useCallback(
+    (fileRejections: FileRejection[]) => {
+      if (!fileRejections?.length) return;
+      const rej = fileRejections[0];
+      const codes = new Set(rej.errors.map((e) => e.code));
+      let message = "El archivo no cumple con los requisitos.";
+      if (codes.has("file-too-large")) {
+        message = "El tamaño del archivo excede el máximo permitido (100MB).";
+      } else if (codes.has("file-invalid-type")) {
+        message = "Formato no soportado. Usa MP4, AVI, MOV o WMV.";
+      } else if (codes.has("too-many-files")) {
+        message = "Solo se permite subir un archivo a la vez.";
+      }
+      toast({
+        title: "No se pudo cargar el video",
+        description: message,
+        variant: "destructive",
+      });
     },
     [toast]
   );
 
   const startAnalysis = async () => {
-    if (!uploadedFile) return;
+    if (!uploadedFile) {
+      toast({
+        title: "Selecciona un video",
+        description:
+          "Debes cargar un video válido antes de iniciar el análisis.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -118,25 +209,25 @@ const VideoUpload = () => {
 
       setAnalysisData({
         analyzedVideoBlob: videoBlob,
-        stats: stats,
+        stats,
         isAnalyzing: false,
       });
 
       toast({
         title: "Análisis completado",
-        description: "Video analizado con MediaPipe JS.",
+        description: "Video analizado correctamente.",
       });
-
-      setTimeout(() => navigate("/results"), 1000);
+      setTimeout(() => navigate("/results"), 800);
     } catch (error) {
       setIsUploading(false);
       setUploadProgress(0);
       setAnalysisData({ isAnalyzing: false });
 
+      const message =
+        error instanceof Error ? error.message : "Error desconocido";
       toast({
         title: "Error en el análisis",
-        description:
-          error instanceof Error ? error.message : "Error desconocido",
+        description: message,
         variant: "destructive",
       });
     }
@@ -144,11 +235,11 @@ const VideoUpload = () => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      "video/*": [".mp4", ".avi", ".mov", ".wmv"],
-    },
-    maxSize: 100 * 1024 * 1024, // 100MB
+    onDropRejected,
+    accept: { "video/*": [".mp4", ".avi", ".mov", ".wmv"] },
+    maxSize: MAX_SIZE_BYTES,
     multiple: false,
+    disabled: isUploading,
   });
 
   const resetUpload = () => {
@@ -171,7 +262,7 @@ const VideoUpload = () => {
             >
               <>
                 <Wifi className="h-3 w-3 mr-1" />
-                MediaPipe JS Activo
+                {isApiConnected ? "API Conectada" : "API No Disponible"}
               </>
             </Badge>
           )}
@@ -227,12 +318,11 @@ const VideoUpload = () => {
           {!uploadedFile ? (
             <div
               {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-smooth
-                ${
-                  isDragActive
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/50 hover:bg-muted/50"
-                }`}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-smooth ${
+                isDragActive
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:border-primary/50 hover:bg-muted/50"
+              }`}
             >
               <input {...getInputProps()} />
               <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -275,9 +365,13 @@ const VideoUpload = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Procesando video...</span>
-                    {/* <span>{uploadProgress}%</span> */}
+                    <span>{uploadProgress}%</span>
                   </div>
                   <Progress value={uploadProgress} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Este proceso puede tardar entre 30 segundos y 2 minutos
+                    dependiendo de la duración del video.
+                  </p>
                 </div>
               )}
 
