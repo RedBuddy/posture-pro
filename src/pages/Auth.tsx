@@ -1,50 +1,57 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthAPI } from '@/services/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Activity } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthAPI } from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Activity } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { login, register, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  
+
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('login');
-  
+  const [activeTab, setActiveTab] = useState<string>("login");
+
   // Login form
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
   // Register form
-  const [registerName, setRegisterName] = useState('');
-  const [registerEmail, setRegisterEmail] = useState('');
-  const [registerPassword, setRegisterPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [registerName, setRegisterName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   // Forgot password
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [resetToken, setResetToken] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [showResetForm, setShowResetForm] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/upload');
+      navigate("/upload");
     }
-    
-    const token = searchParams.get('reset_token');
+
+    const token = searchParams.get("reset_token");
     if (token) {
       setResetToken(token);
       setShowResetForm(true);
-      setActiveTab('forgot');
+      setActiveTab("forgot");
     }
   }, [isAuthenticated, navigate, searchParams]);
 
@@ -55,15 +62,16 @@ const Auth = () => {
     try {
       await login(loginEmail, loginPassword);
       toast({
-        title: 'Bienvenido',
-        description: 'Has iniciado sesión correctamente',
+        title: "Bienvenido",
+        description: "Has iniciado sesión correctamente",
       });
-      navigate('/upload');
+      navigate("/upload");
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error al iniciar sesión',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error al iniciar sesión",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -72,21 +80,21 @@ const Auth = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (registerPassword !== confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Las contraseñas no coinciden',
-        variant: 'destructive',
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive",
       });
       return;
     }
 
     if (registerPassword.length < 6) {
       toast({
-        title: 'Error',
-        description: 'La contraseña debe tener al menos 6 caracteres',
-        variant: 'destructive',
+        title: "Error",
+        description: "La contraseña debe tener al menos 6 caracteres",
+        variant: "destructive",
       });
       return;
     }
@@ -96,15 +104,16 @@ const Auth = () => {
     try {
       await register(registerEmail, registerPassword, registerName);
       toast({
-        title: '¡Cuenta creada!',
-        description: 'Tu cuenta ha sido creada correctamente',
+        title: "¡Cuenta creada!",
+        description: "Tu cuenta ha sido creada correctamente",
       });
-      navigate('/upload');
+      navigate("/upload");
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error al crear cuenta',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error al crear cuenta",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -118,15 +127,16 @@ const Auth = () => {
     try {
       await AuthAPI.forgotPassword(forgotEmail);
       toast({
-        title: 'Correo enviado',
-        description: 'Revisa tu correo para restablecer tu contraseña',
+        title: "Correo enviado",
+        description: "Revisa tu correo para restablecer tu contraseña",
       });
-      setForgotEmail('');
+      setForgotEmail("");
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error al enviar correo',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Error al enviar correo",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -135,12 +145,12 @@ const Auth = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword.length < 6) {
       toast({
-        title: 'Error',
-        description: 'La contraseña debe tener al menos 6 caracteres',
-        variant: 'destructive',
+        title: "Error",
+        description: "La contraseña debe tener al menos 6 caracteres",
+        variant: "destructive",
       });
       return;
     }
@@ -150,16 +160,19 @@ const Auth = () => {
     try {
       await AuthAPI.resetPassword(resetToken, newPassword);
       toast({
-        title: 'Contraseña actualizada',
-        description: 'Ahora puedes iniciar sesión con tu nueva contraseña',
+        title: "Contraseña actualizada",
+        description: "Ahora puedes iniciar sesión con tu nueva contraseña",
       });
       setShowResetForm(false);
-      setActiveTab('login');
+      setActiveTab("login");
     } catch (error) {
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error al restablecer contraseña',
-        variant: 'destructive',
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Error al restablecer contraseña",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -178,7 +191,11 @@ const Auth = () => {
         </div>
 
         <Card>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
               <TabsTrigger value="register">Registro</TabsTrigger>
@@ -189,7 +206,9 @@ const Auth = () => {
               <form onSubmit={handleLogin}>
                 <CardHeader>
                   <CardTitle>Iniciar Sesión</CardTitle>
-                  <CardDescription>Ingresa tus credenciales para continuar</CardDescription>
+                  <CardDescription>
+                    Ingresa tus credenciales para continuar
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -216,7 +235,9 @@ const Auth = () => {
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Iniciar Sesión
                   </Button>
                 </CardFooter>
@@ -227,11 +248,13 @@ const Auth = () => {
               <form onSubmit={handleRegister}>
                 <CardHeader>
                   <CardTitle>Crear Cuenta</CardTitle>
-                  <CardDescription>Regístrate para comenzar a analizar</CardDescription>
+                  <CardDescription>
+                    Regístrate para comenzar a analizar
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="register-name">Nombre (opcional)</Label>
+                    <Label htmlFor="register-name">Nombre</Label>
                     <Input
                       id="register-name"
                       type="text"
@@ -263,7 +286,9 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+                    <Label htmlFor="confirm-password">
+                      Confirmar Contraseña
+                    </Label>
                     <Input
                       id="confirm-password"
                       type="password"
@@ -275,7 +300,9 @@ const Auth = () => {
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Crear Cuenta
                   </Button>
                 </CardFooter>
@@ -287,7 +314,9 @@ const Auth = () => {
                 <form onSubmit={handleResetPassword}>
                   <CardHeader>
                     <CardTitle>Nueva Contraseña</CardTitle>
-                    <CardDescription>Ingresa tu nueva contraseña</CardDescription>
+                    <CardDescription>
+                      Ingresa tu nueva contraseña
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
@@ -303,8 +332,14 @@ const Auth = () => {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       Restablecer Contraseña
                     </Button>
                   </CardFooter>
@@ -331,8 +366,14 @@ const Auth = () => {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isLoading}
+                    >
+                      {isLoading && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       Enviar Correo
                     </Button>
                   </CardFooter>

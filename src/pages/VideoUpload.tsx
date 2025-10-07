@@ -2,11 +2,30 @@ import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Video, CheckCircle, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import {
+  Upload,
+  Video,
+  CheckCircle,
+  AlertCircle,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { VideoAnalysisAPI, ExerciseType } from "@/services/api";
 import { useAnalysis } from "@/contexts/AnalysisContext";
@@ -16,7 +35,8 @@ const VideoUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [exerciseTypes, setExerciseTypes] = useState<ExerciseType[]>([]);
-  const [selectedExercise, setSelectedExercise] = useState<string>("sentadilla");
+  const [selectedExercise, setSelectedExercise] =
+    useState<string>("sentadilla");
   const [isApiConnected, setIsApiConnected] = useState<boolean | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -27,23 +47,35 @@ const VideoUpload = () => {
       try {
         const [connected, types] = await Promise.all([
           VideoAnalysisAPI.healthCheck(),
-          VideoAnalysisAPI.getExerciseTypes()
+          VideoAnalysisAPI.getExerciseTypes(),
         ]);
-        
+
         setIsApiConnected(connected);
         setExerciseTypes(types);
-        
+
         toast({
           title: "MediaPipe JS Activo",
           description: "Análisis de postura en tiempo real listo.",
-          variant: "default"
+          variant: "default",
         });
       } catch (error) {
         setIsApiConnected(false);
         setExerciseTypes([
-          { id: 'sentadilla', name: 'SENTADILLA', description: 'Análisis de sentadillas' },
-          { id: 'peso_muerto', name: 'PESO MUERTO', description: 'Análisis de peso muerto' },
-          { id: 'press_banca', name: 'PRESS BANCA', description: 'Análisis de press banca' }
+          {
+            id: "sentadilla",
+            name: "SENTADILLA",
+            description: "Análisis de sentadillas",
+          },
+          {
+            id: "peso_muerto",
+            name: "PESO MUERTO",
+            description: "Análisis de peso muerto",
+          },
+          {
+            id: "press_banca",
+            name: "PRESS BANCA",
+            description: "Análisis de press banca",
+          },
         ]);
       }
     };
@@ -51,16 +83,19 @@ const VideoUpload = () => {
     checkApiAndLoadExercises();
   }, [toast]);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
-      setUploadedFile(file);
-      toast({
-        title: "Video seleccionado",
-        description: `${file.name} listo para análisis.`,
-      });
-    }
-  }, [toast]);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0];
+      if (file) {
+        setUploadedFile(file);
+        toast({
+          title: "Video seleccionado",
+          description: `${file.name} listo para análisis.`,
+        });
+      }
+    },
+    [toast]
+  );
 
   const startAnalysis = async () => {
     if (!uploadedFile) return;
@@ -69,10 +104,10 @@ const VideoUpload = () => {
     setUploadProgress(0);
 
     try {
-      setAnalysisData({ 
-        isAnalyzing: true, 
-        videoFile: uploadedFile, 
-        exerciseType: selectedExercise 
+      setAnalysisData({
+        isAnalyzing: true,
+        videoFile: uploadedFile,
+        exerciseType: selectedExercise,
       });
 
       const { videoBlob, stats } = await VideoAnalysisAPI.uploadAndAnalyze(
@@ -84,7 +119,7 @@ const VideoUpload = () => {
       setAnalysisData({
         analyzedVideoBlob: videoBlob,
         stats: stats,
-        isAnalyzing: false
+        isAnalyzing: false,
       });
 
       toast({
@@ -92,16 +127,17 @@ const VideoUpload = () => {
         description: "Video analizado con MediaPipe JS.",
       });
 
-      setTimeout(() => navigate('/results'), 1000);
+      setTimeout(() => navigate("/results"), 1000);
     } catch (error) {
       setIsUploading(false);
       setUploadProgress(0);
       setAnalysisData({ isAnalyzing: false });
-      
+
       toast({
         title: "Error en el análisis",
-        description: error instanceof Error ? error.message : "Error desconocido",
-        variant: "destructive"
+        description:
+          error instanceof Error ? error.message : "Error desconocido",
+        variant: "destructive",
       });
     }
   };
@@ -109,10 +145,10 @@ const VideoUpload = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'video/*': ['.mp4', '.avi', '.mov', '.wmv']
+      "video/*": [".mp4", ".avi", ".mov", ".wmv"],
     },
     maxSize: 100 * 1024 * 1024, // 100MB
-    multiple: false
+    multiple: false,
   });
 
   const resetUpload = () => {
@@ -129,7 +165,10 @@ const VideoUpload = () => {
             Subir Video para Análisis
           </h1>
           {isApiConnected !== null && (
-            <Badge variant={isApiConnected ? "secondary" : "destructive"} className="ml-2">
+            <Badge
+              variant={isApiConnected ? "secondary" : "destructive"}
+              className="ml-2"
+            >
               <>
                 <Wifi className="h-3 w-3 mr-1" />
                 MediaPipe JS Activo
@@ -155,7 +194,7 @@ const VideoUpload = () => {
         </CardHeader>
         <CardContent>
           <Select value={selectedExercise} onValueChange={setSelectedExercise}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="justify-center gap-[1rem]">
               <SelectValue placeholder="Selecciona un ejercicio" />
             </SelectTrigger>
             <SelectContent>
@@ -163,7 +202,9 @@ const VideoUpload = () => {
                 <SelectItem key={exercise.id} value={exercise.id}>
                   <div className="flex flex-col">
                     <span className="font-medium">{exercise.name}</span>
-                    <span className="text-sm text-muted-foreground">{exercise.description}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {exercise.description}
+                    </span>
                   </div>
                 </SelectItem>
               ))}
@@ -187,9 +228,10 @@ const VideoUpload = () => {
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-smooth
-                ${isDragActive 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                ${
+                  isDragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50 hover:bg-muted/50"
                 }`}
             >
               <input {...getInputProps()} />
@@ -204,7 +246,8 @@ const VideoUpload = () => {
                     Arrastra y suelta tu video aquí, o haz clic para seleccionar
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    El video será analizado para detectar la postura durante el ejercicio
+                    El video será analizado para detectar la postura durante el
+                    ejercicio
                   </p>
                 </div>
               )}
@@ -227,20 +270,24 @@ const VideoUpload = () => {
                   <AlertCircle className="h-6 w-6 text-warning" />
                 )}
               </div>
-              
+
               {isUploading && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Subiendo video...</span>
-                    <span>{uploadProgress}%</span>
+                    <span>Procesando video...</span>
+                    {/* <span>{uploadProgress}%</span> */}
                   </div>
                   <Progress value={uploadProgress} className="h-2" />
                 </div>
               )}
-              
+
               <div className="flex gap-3">
                 {uploadProgress === 100 ? (
-                  <Button variant="outline" onClick={resetUpload} className="flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={resetUpload}
+                    className="flex-1"
+                  >
                     Analizar Otro Video
                   </Button>
                 ) : isUploading ? (
@@ -249,10 +296,18 @@ const VideoUpload = () => {
                   </Button>
                 ) : (
                   <>
-                    <Button variant="outline" onClick={resetUpload} className="flex-1">
+                    <Button
+                      variant="outline"
+                      onClick={resetUpload}
+                      className="flex-1"
+                    >
                       Seleccionar Otro Video
                     </Button>
-                    <Button variant="hero" onClick={startAnalysis} className="flex-1">
+                    <Button
+                      variant="hero"
+                      onClick={startAnalysis}
+                      className="flex-1"
+                    >
                       Iniciar Análisis Postural
                     </Button>
                   </>
@@ -275,7 +330,7 @@ const VideoUpload = () => {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card className="text-center shadow-soft">
           <CardContent className="pt-6">
             <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -287,7 +342,7 @@ const VideoUpload = () => {
             </p>
           </CardContent>
         </Card>
-        
+
         <Card className="text-center shadow-soft">
           <CardContent className="pt-6">
             <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">

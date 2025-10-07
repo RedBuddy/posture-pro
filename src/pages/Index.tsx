@@ -1,20 +1,26 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Camera, 
-  BarChart3, 
-  Shield, 
-  Zap, 
-  Users, 
+import {
+  Camera,
+  BarChart3,
+  Shield,
+  Zap,
+  Users,
   Award,
   CheckCircle,
   Upload,
   Activity,
   LogOut,
-  User
+  User,
 } from "lucide-react";
 import heroImage from "@/assets/hero-exercise-analysis.jpg";
 
@@ -25,30 +31,34 @@ const Index = () => {
     {
       icon: Camera,
       title: "Análisis de Video IA",
-      description: "Tecnología de visión artificial avanzada para detectar posturas en tiempo real"
+      description:
+        "Tecnología de visión artificial avanzada para detectar posturas en tiempo real",
     },
     {
       icon: BarChart3,
       title: "Métricas Detalladas",
-      description: "Análisis completo con puntuaciones y recomendaciones personalizadas"
+      description:
+        "Análisis completo con puntuaciones y recomendaciones personalizadas",
     },
     {
       icon: Shield,
       title: "Prevención de Lesiones",
-      description: "Identifica problemas posturales antes de que se conviertan en lesiones"
+      description:
+        "Identifica problemas posturales antes de que se conviertan en lesiones",
     },
     {
       icon: Zap,
       title: "Resultados Instantáneos",
-      description: "Procesamiento rápido con feedback inmediato sobre tu técnica"
-    }
+      description:
+        "Procesamiento rápido con feedback inmediato sobre tu técnica",
+    },
   ];
 
   const stats = [
     { number: "95%", label: "Precisión en detección" },
     { number: "1000+", label: "Ejercicios analizados" },
     { number: "50+", label: "Tipos de ejercicios" },
-    { number: "24/7", label: "Disponibilidad" }
+    { number: "24/7", label: "Disponibilidad" },
   ];
 
   return (
@@ -108,11 +118,12 @@ const Index = () => {
                   </span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                  Sistema basado en visión artificial para analizar tu postura durante ejercicios físicos. 
-                  Obtén feedback instantáneo y recomendaciones personalizadas.
+                  Sistema basado en visión artificial para analizar tu postura
+                  durante ejercicios físicos. Obtén feedback instantáneo y
+                  recomendaciones personalizadas.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/upload">
                   <Button variant="hero" size="lg" className="w-full sm:w-auto">
@@ -121,7 +132,11 @@ const Index = () => {
                   </Button>
                 </Link>
                 <Link to="/results">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
                     Ver Ejemplo
                   </Button>
                 </Link>
@@ -130,19 +145,19 @@ const Index = () => {
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success" />
-                  Gratis para estudiantes
+                  Gratis para todos
                 </div>
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-success" />
                   Sin registro requerido
-                </div>
+                </div> */}
               </div>
             </div>
 
             <div className="relative">
               <div className="relative overflow-hidden rounded-2xl shadow-large">
-                <img 
-                  src={heroImage} 
+                <img
+                  src={heroImage}
                   alt="Análisis de postura con IA"
                   className="w-full h-full object-cover"
                 />
@@ -161,7 +176,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-muted/30">
+      {/* <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -174,7 +189,7 @@ const Index = () => {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section */}
       <section className="py-20 px-4">
@@ -182,17 +197,23 @@ const Index = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold mb-4">
               Tecnología de
-              <span className="bg-gradient-primary bg-clip-text text-transparent"> Vanguardia</span>
+              <span className="bg-gradient-primary bg-clip-text text-transparent">
+                {" "}
+                Vanguardia
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Utilizamos algoritmos avanzados de visión artificial para proporcionar 
-              análisis precisos y recomendaciones personalizadas
+              Utilizamos algoritmos avanzados de visión artificial para
+              proporcionar análisis precisos y recomendaciones personalizadas
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="shadow-medium hover:shadow-large transition-smooth border-0 bg-card/50 backdrop-blur-sm">
+              <Card
+                key={index}
+                className="shadow-medium hover:shadow-large transition-smooth border-0 bg-card/50 backdrop-blur-sm"
+              >
                 <CardHeader>
                   <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                     <feature.icon className="h-6 w-6 text-primary" />
@@ -259,20 +280,29 @@ const Index = () => {
                 ¿Listo para Mejorar tu Técnica?
               </h2>
               <p className="text-xl mb-8 text-primary-foreground/80">
-                Comienza ahora y descubre cómo perfeccionar tu forma de ejercitarte
+                Comienza ahora y descubre cómo perfeccionar tu forma de
+                ejercitarte
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/upload">
-                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full sm:w-auto"
+                  >
                     <Upload className="mr-2 h-5 w-5" />
                     Subir Mi Video
                   </Button>
                 </Link>
-                <Link to="/results">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+                {/* <Link to="/results">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary text-black"
+                  >
                     Ver Demo
                   </Button>
-                </Link>
+                </Link> */}
               </div>
             </CardContent>
           </Card>
@@ -287,7 +317,8 @@ const Index = () => {
             <span className="text-lg font-semibold">PostureAI</span>
           </div>
           <p className="text-muted-foreground text-sm">
-            Sistema de análisis postural desarrollado como proyecto de tesis universitaria
+            Sistema de análisis postural desarrollado como proyecto de tesis
+            universitaria
           </p>
           <p className="text-muted-foreground text-xs mt-2">
             © 2024 - Desarrollo de un sistema basado en visión artificial
