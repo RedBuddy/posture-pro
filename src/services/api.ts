@@ -10,6 +10,7 @@ export interface AnalysisResult {
   scores_por_frame: number[];
   duracion_segundos: number;
   score_promedio: number;
+  recomendaciones?: string[]; // nuevo (opcional)
 }
 
 export interface ExerciseType {

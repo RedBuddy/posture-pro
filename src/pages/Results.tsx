@@ -17,12 +17,12 @@ import {
   AlertTriangle,
   CheckCircle,
   BarChart3,
-  Download,
   Play,
-  User,
   ArrowLeft,
 } from "lucide-react";
 import { useAnalysis } from "@/contexts/AnalysisContext";
+
+type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
 
 const Results = () => {
   const { analysisData, resetAnalysis } = useAnalysis();
@@ -54,18 +54,21 @@ const Results = () => {
   const processedData = {
     overallScore: Math.round(stats.score_promedio),
     exercise: analysisData.exerciseType.replace("_", " ").toUpperCase(),
-    duration: `${Math.round(stats.duracion_segundos)} segundos`,
-    frameCount: stats.scores_por_frame.length,
+    durationSeconds: stats.duracion_segundos, // sin redondear
+    repetitions: stats.repeticiones,
     issues: stats.errores_detectados.map((error, index) => ({
       type: error.error,
       severity: index % 3 === 0 ? "alto" : index % 3 === 1 ? "medio" : "bajo",
       frame: Math.round(error.timestamp),
     })),
-    improvements: [
-      "Mantén las rodillas alineadas con los pies",
-      "Reduce la inclinación del torso hacia adelante",
-      "Fortalece los músculos del core para mejor estabilidad",
-    ],
+    improvements:
+      stats.recomendaciones?.length > 0
+        ? stats.recomendaciones
+        : [
+            "Mantén las rodillas alineadas con los pies",
+            "Reduce la inclinación del torso hacia adelante",
+            "Fortalece los músculos del core para mejor estabilidad",
+          ],
     bodyMetrics: {
       leftKnee: Math.round(stats.score_promedio - 5),
       rightKnee: Math.round(stats.score_promedio + 3),
@@ -75,12 +78,12 @@ const Results = () => {
     },
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string): BadgeVariant => {
     switch (severity) {
       case "alto":
         return "destructive";
       case "medio":
-        return "warning";
+        return "default";
       case "bajo":
         return "secondary";
       default:
@@ -123,15 +126,17 @@ const Results = () => {
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-foreground mb-2">
-                {processedData.duration}
+                {processedData.durationSeconds.toFixed(1)} s
               </div>
               <p className="text-sm text-muted-foreground">Duración</p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-foreground mb-2">
-                {processedData.frameCount}
+                {processedData.repetitions}
               </div>
-              <p className="text-sm text-muted-foreground">Frames Analizados</p>
+              <p className="text-sm text-muted-foreground">
+                Repeticiones Totales
+              </p>
             </div>
             <div className="text-center">
               <div className="text-2xl font-semibold text-destructive mb-2">
@@ -146,10 +151,10 @@ const Results = () => {
       </Card>
 
       <Tabs defaultValue="analysis" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="analysis">Análisis</TabsTrigger>
-          <TabsTrigger value="metrics">Métricas</TabsTrigger>
-          <TabsTrigger value="timeline">Línea de Tiempo</TabsTrigger>
+          {/* <TabsTrigger value="metrics">Métricas</TabsTrigger> */}
+          {/* <TabsTrigger value="timeline">Línea de Tiempo</TabsTrigger> */}
           <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
         </TabsList>
 
@@ -209,7 +214,7 @@ const Results = () => {
                         Segundo {issue.frame}
                       </p>
                     </div>
-                    <Badge variant={getSeverityColor(issue.severity) as any}>
+                    <Badge variant={getSeverityColor(issue.severity)}>
                       {issue.severity}
                     </Badge>
                   </div>
