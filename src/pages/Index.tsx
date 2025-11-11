@@ -131,7 +131,7 @@ const Index = () => {
                     Comenzar Análisis
                   </Button>
                 </Link>
-                <Link to="/results">
+                {/* <Link to="/results">
                   <Button
                     variant="outline"
                     size="lg"
@@ -139,7 +139,7 @@ const Index = () => {
                   >
                     Ver Ejemplo
                   </Button>
-                </Link>
+                </Link> */}
               </div>
 
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
