@@ -62,9 +62,9 @@ const VideoUpload = () => {
             description: "Análisis de sentadillas",
           },
           {
-            id: "peso_muerto",
-            name: "PESO MUERTO",
-            description: "Análisis de peso muerto",
+            id: "desplantes",
+            name: "DESPLANTES",
+            description: "Análisis de desplantes",
           },
           {
             id: "press_banca",

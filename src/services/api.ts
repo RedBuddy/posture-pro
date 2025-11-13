@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://tesismediapipe.onrender.com';
 
 export interface AnalysisResult {
   repeticiones: number;
@@ -87,7 +87,7 @@ export class VideoAnalysisAPI {
       // Fallback a tipos por defecto
       return [
         { id: 'sentadilla', name: 'SENTADILLA', description: 'Análisis de sentadillas' },
-        { id: 'peso_muerto', name: 'PESO MUERTO', description: 'Análisis de peso muerto' },
+        { id: 'desplantes', name: 'DESPLANTES', description: 'Análisis de desplantes' },
         { id: 'press_banca', name: 'PRESS BANCA', description: 'Análisis de press de banca' }
       ];
     }
