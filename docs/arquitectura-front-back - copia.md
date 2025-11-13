@@ -289,7 +289,7 @@ erDiagram
     - Content-Type: multipart/form-data
     - Form fields:
       - video: File (obligatorio)
-      - exercise_type: 'sentadilla' | 'peso_muerto' | 'press_banca'
+      - exercise_type: 'sentadilla' | 'desplante' | 'press_banca'
     - 200 OK:
       {
       "video_path": "/media/analyzed_sentadilla_1690000000.mp4",

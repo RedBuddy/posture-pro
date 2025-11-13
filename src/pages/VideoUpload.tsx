@@ -38,44 +38,54 @@ const VideoUpload = () => {
   const { setAnalysisData } = useAnalysis();
 
   useEffect(() => {
-    const checkApiAndLoadExercises = async () => {
+    const init = async () => {
+      // Fetch exercise types from API (or fallback); this does not affect health badge
+
+      setExerciseTypes([
+        {
+          id: "sentadilla",
+          name: "SENTADILLA",
+          description: "Análisis de sentadillas",
+        },
+        {
+          id: "desplante",
+          name: "DESPLANTE",
+          description: "Análisis de desplante",
+        },
+        {
+          id: "press_banca",
+          name: "PRESS BANCA",
+          description: "Análisis de press de banca",
+        },
+      ]);
+
+      // Health check only controls the badge/toast
       try {
-        const [connected, types] = await Promise.all([
-          VideoAnalysisAPI.healthCheck(),
-          VideoAnalysisAPI.getExerciseTypes(),
-        ]);
-
+        const connected = await VideoAnalysisAPI.healthCheck();
         setIsApiConnected(connected);
-        setExerciseTypes(types);
-
-        toast({
-          title: "API conectada",
-          description: "Servicio de análisis disponible.",
-          variant: "default",
-        });
-      } catch (error) {
+        if (connected) {
+          toast({
+            title: "API conectada",
+            description: "Servicio de análisis disponible.",
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "API no disponible",
+            description: "No se pudo contactar el servicio de análisis.",
+            variant: "destructive",
+          });
+        }
+      } catch {
         setIsApiConnected(false);
-        setExerciseTypes([
-          {
-            id: "sentadilla",
-            name: "SENTADILLA",
-            description: "Análisis de sentadillas",
-          },
-          {
-            id: "desplantes",
-            name: "DESPLANTES",
-            description: "Análisis de desplantes",
-          },
-          {
-            id: "press_banca",
-            name: "PRESS BANCA",
-            description: "Análisis de press banca",
-          },
-        ]);
+        toast({
+          title: "API no disponible",
+          description: "No se pudo contactar el servicio de análisis.",
+          variant: "destructive",
+        });
       }
     };
-
-    checkApiAndLoadExercises();
+    init();
   }, [toast]);
 
   // Validación de metadatos básicos del video antes de aceptarlo

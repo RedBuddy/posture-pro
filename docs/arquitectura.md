@@ -235,7 +235,7 @@ erDiagram
     - Auth: opcional Bearer en `Authorization`.
     - Request: `multipart/form-data`
       - `video`: File
-      - `exercise_type`: `'sentadilla' | 'peso_muerto' | 'press_banca'`
+      - `exercise_type`: `'sentadilla' | 'desplante' | 'press_banca'`
     - Response (200):
       ```json
       {
