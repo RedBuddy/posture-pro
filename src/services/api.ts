@@ -90,7 +90,7 @@ export class VideoAnalysisAPI {
       // Fallback a tipos por defecto
       return [
         { id: 'sentadilla', name: 'SENTADILLA', description: 'Análisis de sentadillas' },
-        { id: 'desplante', name: 'DESPLANTE', description: 'Análisis de desplante' },
+        { id: 'desplantes', name: 'DESPLANTES', description: 'Análisis de desplantes' },
         { id: 'press_banca', name: 'PRESS BANCA', description: 'Análisis de press de banca' }
       ];
     }

@@ -73,15 +73,17 @@ const Index = () => {
                 PostureAI
               </span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 justify-end">
               {isAuthenticated ? (
                 <>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <User className="h-4 w-4" />
                     <span>{user?.name || user?.email}</span>
                   </div>
                   <Link to="/upload">
-                    <Button variant="outline">Subir Video</Button>
+                    <Button className="py-2 px-1" variant="hero">
+                      Subir Video
+                    </Button>
                   </Link>
                   <Button variant="ghost" size="icon" onClick={logout}>
                     <LogOut className="h-5 w-5" />
@@ -90,10 +92,14 @@ const Index = () => {
               ) : (
                 <>
                   <Link to="/auth">
-                    <Button variant="outline">Iniciar Sesión</Button>
+                    <Button className="py-2 px-1" variant="outline">
+                      Iniciar Sesión
+                    </Button>
                   </Link>
                   <Link to="/auth">
-                    <Button variant="default">Registrarse</Button>
+                    <Button className="py-2 px-1" variant="default">
+                      Registrarse
+                    </Button>
                   </Link>
                 </>
               )}

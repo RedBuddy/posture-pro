@@ -2,6 +2,9 @@ import { useState, useCallback, useEffect } from "react";
 import { useDropzone, FileRejection } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Activity, LogOut, User } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -34,6 +37,7 @@ const VideoUpload = () => {
     useState<string>("sentadilla");
   const [isApiConnected, setIsApiConnected] = useState<boolean | null>(null);
   const { toast } = useToast();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const { setAnalysisData } = useAnalysis();
 
@@ -48,8 +52,8 @@ const VideoUpload = () => {
           description: "Análisis de sentadillas",
         },
         {
-          id: "desplante",
-          name: "DESPLANTE",
+          id: "desplantes",
+          name: "DESPLANTES",
           description: "Análisis de desplante",
         },
         {
@@ -68,12 +72,14 @@ const VideoUpload = () => {
             title: "API conectada",
             description: "Servicio de análisis disponible.",
             variant: "default",
+            duration: 2000,
           });
         } else {
           toast({
             title: "API no disponible",
             description: "No se pudo contactar el servicio de análisis.",
             variant: "destructive",
+            duration: 2000,
           });
         }
       } catch {
@@ -259,205 +265,267 @@ const VideoUpload = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Subir Video para Análisis
-          </h1>
-          {isApiConnected !== null && (
-            <Badge
-              variant={isApiConnected ? "secondary" : "destructive"}
-              className="ml-2"
-            >
-              <>
-                <Wifi className="h-3 w-3 mr-1" />
-                {isApiConnected ? "API Conectada" : "API No Disponible"}
-              </>
-            </Badge>
-          )}
-        </div>
-        <p className="text-lg text-muted-foreground">
-          Sube tu video de ejercicio y obtén un análisis detallado de tu postura
-        </p>
-      </div>
-
-      {/* Selector de Ejercicio */}
-      <Card className="shadow-medium mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Video className="h-5 w-5 text-primary" />
-            Tipo de Ejercicio
-          </CardTitle>
-          <CardDescription>
-            Selecciona el tipo de ejercicio que vas a realizar
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedExercise} onValueChange={setSelectedExercise}>
-            <SelectTrigger className="justify-center gap-[1rem]">
-              <SelectValue placeholder="Selecciona un ejercicio" />
-            </SelectTrigger>
-            <SelectContent>
-              {exerciseTypes.map((exercise) => (
-                <SelectItem key={exercise.id} value={exercise.id}>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{exercise.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {exercise.description}
-                    </span>
+    <div className="min-h-screen bg-background">
+      {/* Navigation */}
+      <nav className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/95">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                PostureAI
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <User className="h-4 w-4" />
+                    <span>{user?.name || user?.email}</span>
                   </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
 
-      <Card className="shadow-medium">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-primary" />
-            Seleccionar Video
-          </CardTitle>
-          <CardDescription>
-            Formatos soportados: MP4, AVI, MOV, WMV (máximo 100MB)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!uploadedFile ? (
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-smooth ${
-                isDragActive
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50 hover:bg-muted/50"
-              }`}
-            >
-              <input {...getInputProps()} />
-              <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              {isDragActive ? (
-                <p className="text-lg font-medium text-primary">
-                  Suelta el video aquí...
-                </p>
+                  <Button variant="ghost" size="icon" onClick={logout}>
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </>
               ) : (
-                <div>
-                  <p className="text-lg font-medium mb-2">
-                    Arrastra y suelta tu video aquí, o haz clic para seleccionar
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    El video será analizado para detectar la postura durante el
-                    ejercicio
-                  </p>
-                </div>
+                <>
+                  <Link to="/auth?mode=login">
+                    <Button variant="outline">Iniciar Sesión</Button>
+                  </Link>
+                  <Link to="/auth?mode=register">
+                    <Button variant="default">Registrarse</Button>
+                  </Link>
+                </>
               )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                <Video className="h-8 w-8 text-primary" />
-                <div className="flex-1">
-                  <p className="font-medium">{uploadedFile.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              Subir Video para Análisis
+            </h1>
+            {isApiConnected !== null && (
+              <Badge
+                variant={isApiConnected ? "secondary" : "destructive"}
+                className="ml-2"
+              >
+                <>
+                  <Wifi className="h-3 w-3 mr-1" />
+                  {isApiConnected ? "API Conectada" : "API No Disponible"}
+                </>
+              </Badge>
+            )}
+          </div>
+          <p className="text-lg text-muted-foreground">
+            Sube tu video de ejercicio y obtén un análisis detallado de tu
+            postura
+          </p>
+        </div>
+
+        {/* Selector de Ejercicio */}
+        <Card className="shadow-medium mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Video className="h-5 w-5 text-primary" />
+              Tipo de Ejercicio
+            </CardTitle>
+            <CardDescription>
+              Selecciona el tipo de ejercicio que vas a realizar
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select
+              value={selectedExercise}
+              onValueChange={setSelectedExercise}
+            >
+              <SelectTrigger className="justify-center gap-[1rem]">
+                <SelectValue placeholder="Selecciona un ejercicio" />
+              </SelectTrigger>
+              <SelectContent>
+                {exerciseTypes.map((exercise) => (
+                  <SelectItem key={exercise.id} value={exercise.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{exercise.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {exercise.description}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-medium">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5 text-primary" />
+              Seleccionar Video
+            </CardTitle>
+            <CardDescription>
+              Formatos soportados: MP4, AVI, MOV, WMV (máximo 100MB)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!uploadedFile ? (
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-smooth ${
+                  isDragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/50 hover:bg-muted/50"
+                }`}
+              >
+                <input {...getInputProps()} />
+                <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                {isDragActive ? (
+                  <p className="text-lg font-medium text-primary">
+                    Suelta el video aquí...
                   </p>
-                </div>
-                {uploadProgress === 100 ? (
-                  <CheckCircle className="h-6 w-6 text-success" />
-                ) : isUploading ? (
-                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
                 ) : (
-                  <AlertCircle className="h-6 w-6 text-warning" />
+                  <div>
+                    <p className="text-lg font-medium mb-2">
+                      Arrastra y suelta tu video aquí, o haz clic para
+                      seleccionar
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      El video será analizado para detectar la postura durante
+                      el ejercicio
+                    </p>
+                  </div>
                 )}
               </div>
-
-              {isUploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Procesando video...</span>
-                    <span>{uploadProgress}%</span>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                  <Video className="h-8 w-8 text-primary" />
+                  <div className="flex-1">
+                    <p className="font-medium">{uploadedFile.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
                   </div>
-                  <Progress value={uploadProgress} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Este proceso puede tardar entre 30 segundos y 2 minutos
-                    dependiendo de la duración del video.
-                  </p>
+                  {isUploading && uploadProgress === 100 ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+                      <span>Subido — esperando análisis del servidor...</span>
+                    </div>
+                  ) : uploadProgress === 100 ? (
+                    <CheckCircle className="h-6 w-6 text-success" />
+                  ) : isUploading ? (
+                    <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+                  ) : (
+                    <AlertCircle className="h-6 w-6 text-warning" />
+                  )}
                 </div>
-              )}
 
-              <div className="flex gap-3">
-                {uploadProgress === 100 ? (
-                  <Button
-                    variant="outline"
-                    onClick={resetUpload}
-                    className="flex-1"
-                  >
-                    Analizar Otro Video
-                  </Button>
-                ) : isUploading ? (
-                  <Button disabled className="flex-1">
-                    Analizando...
-                  </Button>
-                ) : (
-                  <>
+                {isUploading && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Procesando video...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <Progress value={uploadProgress} className="h-2" />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Este proceso puede tardar entre 30 segundos y 2 minutos
+                      dependiendo de la duración del video.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  {uploadProgress === 100 && !isUploading ? (
                     <Button
                       variant="outline"
                       onClick={resetUpload}
                       className="flex-1"
                     >
-                      Seleccionar Otro Video
+                      Analizar Otro Video
                     </Button>
-                    <Button
-                      variant="hero"
-                      onClick={startAnalysis}
-                      className="flex-1"
-                    >
-                      Iniciar Análisis Postural
-                    </Button>
-                  </>
-                )}
+                  ) : isUploading ? (
+                    uploadProgress === 100 ? (
+                      <Button disabled className="flex-1">
+                        Esperando resultados...
+                      </Button>
+                    ) : (
+                      <Button disabled className="flex-1">
+                        Analizando...
+                      </Button>
+                    )
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={resetUpload}
+                        className="flex-1"
+                      >
+                        Seleccionar Otro Video
+                      </Button>
+                      <Button
+                        variant="hero"
+                        onClick={startAnalysis}
+                        className="flex-1"
+                      >
+                        Iniciar Análisis Postural
+                      </Button>
+                    </>
+                  )}
+                  {isUploading && uploadProgress === 100 && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      El video se ha subido correctamente. El servidor está
+                      procesando el análisis — esto puede tardar unos segundos o
+                      minutos dependiendo de la duración.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="text-center shadow-soft">
-          <CardContent className="pt-6">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Upload className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">1. Subir Video</h3>
-            <p className="text-sm text-muted-foreground">
-              Selecciona tu video de ejercicio para comenzar el análisis
-            </p>
+            )}
           </CardContent>
         </Card>
 
-        <Card className="text-center shadow-soft">
-          <CardContent className="pt-6">
-            <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Video className="h-6 w-6 text-secondary" />
-            </div>
-            <h3 className="font-semibold mb-2">2. Análisis IA</h3>
-            <p className="text-sm text-muted-foreground">
-              Nuestro sistema analiza tu postura frame por frame
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="text-center shadow-soft">
+            <CardContent className="pt-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Upload className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-2">1. Subir Video</h3>
+              <p className="text-sm text-muted-foreground">
+                Selecciona tu video de ejercicio para comenzar el análisis
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card className="text-center shadow-soft">
-          <CardContent className="pt-6">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="font-semibold mb-2">3. Resultados</h3>
-            <p className="text-sm text-muted-foreground">
-              Recibe recomendaciones personalizadas para mejorar
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="text-center shadow-soft">
+            <CardContent className="pt-6">
+              <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Video className="h-6 w-6 text-secondary" />
+              </div>
+              <h3 className="font-semibold mb-2">2. Análisis IA</h3>
+              <p className="text-sm text-muted-foreground">
+                Nuestro sistema analiza tu postura frame por frame
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center shadow-soft">
+            <CardContent className="pt-6">
+              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-6 w-6 text-accent" />
+              </div>
+              <h3 className="font-semibold mb-2">3. Resultados</h3>
+              <p className="text-sm text-muted-foreground">
+                Recibe recomendaciones personalizadas para mejorar
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

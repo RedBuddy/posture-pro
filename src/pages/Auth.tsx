@@ -46,11 +46,18 @@ const Auth = () => {
     if (isAuthenticated) {
       navigate("/upload");
     }
-
     const token = searchParams.get("reset_token");
     if (token) {
       setResetToken(token);
       setShowResetForm(true);
+      setActiveTab("forgot");
+      return;
+    }
+
+    const mode = searchParams.get("mode");
+    if (mode === "register") {
+      setActiveTab("register");
+    } else if (mode === "forgot") {
       setActiveTab("forgot");
     }
   }, [isAuthenticated, navigate, searchParams]);

@@ -310,7 +310,7 @@ const Results = () => {
       </Tabs>
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4 mt-8">
+      <div className="flex flex-wrap gap-4 mt-8 justify-center">
         <Button
           variant="outline"
           onClick={() => navigate("/")}
