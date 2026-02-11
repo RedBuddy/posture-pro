@@ -21,38 +21,40 @@ Este proyecto está construido con tecnologías modernas:
 
 - **Frontend Framework**: React 18 con TypeScript
 - **Build Tool**: Vite
-- **Componentes UI**: shadcn-ui
+- **Componentes UI**: shadcn-ui (Radix UI)
 - **Estilos**: Tailwind CSS
-- **Análisis de Poses**: MediaPipe
-- **Enrutamiento**: React Router v6
-- **Formularios**: React Hook Form + Zod
-- **Estado Global**: TanStack Query + Context API
-- **Notificaciones**: Sonner + Toaster
-- **Gráficos**: Recharts
+- **Análisis de Poses**: MediaPipe (Pose Detection)
+- **Enrutamiento**: React Router
+- **Estado Global**: Context API
+- **HTTP Client**: Fetch API nativa
+- **Carga de Archivos**: React Dropzone
+- **Notificaciones**: Sonner
+- **Iconos**: Lucide React
 
 ## Instalación y Configuración
 
 ### Requisitos Previos
 
 - Node.js (v18 o superior)
-- npm o pnpm
+- pnpm (recomendado) o npm
 
 ### Pasos de Instalación
 
 ```sh
 # 1. Clonar el repositorio
-git clone https://github.com/tu-usuario/tesis-front.git
+git clone <URL_DEL_REPOSITORIO>
 
 # 2. Navegar al directorio del proyecto
-cd tesis-front
+cd Tesis-Front
 
 # 3. Instalar las dependencias
-npm install
-# o si usas pnpm
 pnpm install
 
-# 4. Iniciar el servidor de desarrollo
-npm run dev
+# 4. Configurar variables de entorno
+# Crear .env.development y .env.production según la sección "Variables de Entorno"
+
+# 5. Iniciar el servidor de desarrollo
+pnpm dev
 ```
 
 La aplicación estará disponible en `http://localhost:5173`
@@ -60,11 +62,11 @@ La aplicación estará disponible en `http://localhost:5173`
 ## Scripts Disponibles
 
 ```bash
-npm run dev          # Inicia el servidor de desarrollo
-npm run build        # Compila para producción
-npm run build:dev    # Compila en modo desarrollo
-npm run lint         # Ejecuta el linter
-npm run preview      # Vista previa de la compilación de producción
+pnpm dev          # Inicia el servidor de desarrollo
+pnpm build        # Compila para producción
+pnpm build:dev    # Compila en modo desarrollo
+pnpm lint         # Ejecuta el linter
+pnpm preview      # Vista previa de la compilación de producción
 ```
 
 ## Estructura del Proyecto
@@ -90,17 +92,27 @@ src/
 
 ## Variables de Entorno
 
-Crea un archivo `.env.local` en la raíz del proyecto:
+⚠️ **IMPORTANTE**: Nunca subas archivos `.env` al repositorio. Ya están incluidos en `.gitignore`.
+
+Crea los siguientes archivos según el entorno:
+
+### Desarrollo
+
+Archivo: `.env.development`
 
 ```
 VITE_API_URL=http://localhost:5000
 ```
 
-En producción:
+### Producción
+
+Archivo: `.env.production`
 
 ```
 VITE_API_URL=https://tesismediapipe.onrender.com
 ```
+
+Vite carga automáticamente el archivo correcto según el modo de compilación.
 
 ## Flujo de la Aplicación
 
@@ -117,13 +129,13 @@ VITE_API_URL=https://tesismediapipe.onrender.com
 El proyecto utiliza ESLint para mantener la calidad del código:
 
 ```bash
-npm run lint
+pnpm lint
 ```
 
 ### Construcción de Producción
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Los archivos compilados se generarán en la carpeta `dist/`
