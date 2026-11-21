@@ -57,7 +57,7 @@ pnpm install
 pnpm dev
 ```
 
-La aplicación estará disponible en `http://localhost:5173`
+La aplicación estará disponible en `http://localhost:8080`
 
 ## Scripts Disponibles
 
